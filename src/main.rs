@@ -1,7 +1,40 @@
 use scraper::{Html, Selector};
 use std::env;
 
-fn get_sample_case(url: &str) {}
+fn get_sample_case(url: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let body = reqwest::blocking::get(url)?.text()?;
+    let document = Html::parse_document(&body);
+
+    let selector_section = Selector::parse(".part").unwrap();
+    let selector_h3 = Selector::parse("h3").unwrap();
+    let selector_pre = Selector::parse("pre").unwrap();
+
+    let cases: Vec<String> = document
+        .select(&selector_section)
+        .filter_map(|section| {
+            let h3_text = section
+                .select(&selector_h3)
+                .next()?
+                .text()
+                .collect::<String>();
+
+            if h3_text.contains("入力例") {
+                let pre_text = section
+                    .select(&selector_pre)
+                    .next()?
+                    .text()
+                    .collect::<String>();
+                Some(format!("{}\n{}", h3_text, pre_text))
+            } else {
+                None
+            }
+        })
+        .collect();
+    for x in cases {
+        println!("{}", x);
+    }
+    Ok(())
+}
 
 fn get_problem_urls(html: &str) -> Vec<String> {
     let document = Html::parse_document(&html);
@@ -29,6 +62,7 @@ fn get(contest_name: &str) -> Result<(), Box<dyn std::error::Error>> {
     let urls = get_problem_urls(&body);
     for x in urls {
         println!("{}", x);
+        get_sample_case(&x).expect("サンプルケースの取得に失敗しました");
     }
     Ok(())
 }
