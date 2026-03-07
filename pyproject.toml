@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sample-tester"
+version = "0.1.0"
+authors = [
+    {name = "sqzume"},
+]
+description = "AtCoderのサンプルケースを取得して実行するツール"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "requests",
+    "beautifulsoup4",
+    "colorama",
+    "python-dotenv",
+]
+
+[project.scripts]
+st = "sample_tester.main:main" # コマンド名 = モジュール名:関数名

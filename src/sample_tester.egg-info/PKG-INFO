@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: sample-tester
+Version: 0.1.0
+Summary: AtCoderのサンプルケースを取得して実行するツール
+Author: sqzume
+Requires-Python: >=3.14
+Description-Content-Type: text/markdown
+Requires-Dist: requests
+Requires-Dist: beautifulsoup4
+Requires-Dist: colorama
+Requires-Dist: python-dotenv
+
+## sample-tester
+AtCoder 上の問題でサンプルケースを自動で取得し、テストするツールです。
+
+### 使い方
+`$HOME/.config/.env` に
+```
+REVEL_SESSION=<your revel_session>
+```
+のように REVEL_SESSION を貼り付けてください
