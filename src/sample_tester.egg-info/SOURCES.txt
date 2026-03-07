@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-src/sample_tester/main.py
-src/sample_tester.egg-info/PKG-INFO
-src/sample_tester.egg-info/SOURCES.txt
-src/sample_tester.egg-info/dependency_links.txt
-src/sample_tester.egg-info/entry_points.txt
-src/sample_tester.egg-info/requires.txt
-src/sample_tester.egg-info/top_level.txt

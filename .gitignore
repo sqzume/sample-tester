@@ -1,2 +1,3 @@
 .venv/
 build/
+src/sample_tester.egg-info/

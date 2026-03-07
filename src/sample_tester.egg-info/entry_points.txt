@@ -1,2 +1,0 @@
-[console_scripts]
-st = sample_tester.main:main
