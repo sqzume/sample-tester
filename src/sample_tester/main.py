@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -41,19 +42,15 @@ def main():
         problem = sys.argv[2]
         source_file = "a"
 
-    url = f"https://atcoder.jp/contests/{contest}/tasks"
-    url_list = get_problems_url(url)
+    cache_path = Path.home() / ".cache" / "st"
+    if not cache_path.exists():
+        cache_path.mkdir()
 
-    path = Path.home() / ".cache" / "st"
-    if not path.exists():
-        path.mkdir()
+    contest_path = Path.home() / ".cache" / "st" / f"{contest}"
+    if not contest_path.exists():
+        make_cache(contest)
 
-    index = 0
-    for i in range(len(url_list)):
-        if url_list[i].split("_")[-1] == problem:
-            index = i
-            break
-    cases_in, cases_out = get_sample_case(url_list[index])
+    cases_in, cases_out = read_cache_case(contest, problem)
 
     # コンパイル
     path = Path(f"src/{source_file}.cpp")
@@ -91,6 +88,79 @@ def main():
             print(Fore.RED + "WA")
 
 
+def make_cache(contest):
+    cache_path = Path.home() / ".cache" / "st"
+    if not cache_path.exists():
+        cache_path.mkdir()
+    contest_path = Path.home() / ".cache" / "st" / f"{contest}"
+    if not contest_path.exists():
+        contest_path.mkdir()
+
+    problem_list = get_problems_list(contest)
+    problem_list = list(dict.fromkeys(problem_list))
+    for i in range(len(problem_list)):
+        cases_in, cases_out = get_sample_case(contest, problem_list[i])
+        problem_path = (
+            Path.home() / ".cache" / "st" / f"{contest}" / f"{problem_list[i]}"
+        )
+        problem_path.mkdir()
+        for j in range(len(cases_in)):
+            case_in_path = (
+                Path.home()
+                / ".cache"
+                / "st"
+                / f"{contest}"
+                / f"{problem_list[i]}"
+                / f"case_{j + 1}.in"
+            )
+            case_out_path = (
+                Path.home()
+                / ".cache"
+                / "st"
+                / f"{contest}"
+                / f"{problem_list[i]}"
+                / f"case_{j + 1}.out"
+            )
+            with open(case_in_path, "w", encoding="utf-8") as f:
+                f.write(cases_in[j])
+            with open(case_out_path, "w", encoding="utf-8") as f:
+                f.write(cases_out[j])
+        time.sleep(0.5)
+
+
+def read_cache_case(contest, problem):
+    path = Path.home() / ".cache" / "st" / f"{contest}" / f"{problem}"
+    if not path.exists():
+        print("cache にファイルがありませんでした")
+        sys.exit(1)
+    file_count = sum(1 for p in path.iterdir() if p.is_file())
+    file_count //= 2
+    case_in = []
+    case_out = []
+    for i in range(file_count):
+        infile_path = (
+            Path.home()
+            / ".cache"
+            / "st"
+            / f"{contest}"
+            / f"{problem}"
+            / f"case_{i + 1}.in"
+        )
+        outfile_path = (
+            Path.home()
+            / ".cache"
+            / "st"
+            / f"{contest}"
+            / f"{problem}"
+            / f"case_{i + 1}.out"
+        )
+        with open(infile_path, "r", encoding="utf-8") as f:
+            case_in.append(f.read())
+        with open(outfile_path, "r", encoding="utf-8") as f:
+            case_out.append(f.read())
+    return case_in, case_out
+
+
 def check_config_file():
     path = Path("st.conf")
     if not path.exists():
@@ -116,8 +186,9 @@ def compile(file_name):
         sys.exit(1)
 
 
-def get_problems_url(contest_url):
-    response = session.get(contest_url)
+def get_problems_list(contest):
+    url = f"https://atcoder.jp/contests/{contest}/tasks"
+    response = session.get(url)
     if response.status_code == 404:
         print("無効なコンテスト名です")
         sys.exit(1)
@@ -129,15 +200,19 @@ def get_problems_url(contest_url):
     document = BeautifulSoup(html_content, "html.parser")
     problem_urls = document.select("td.text-center a")
 
-    url_list = []
+    problem_list = []
     for i in problem_urls:
         t = i.get("href")
-        url_list.append(f"https://atcoder.jp{t}")
-    return url_list
+        if t is None:
+            print("リンクが見つかりませんでした")
+            sys.exit(1)
+        problem_list.append(str(t).split("_")[-1])
+    return problem_list
 
 
-def get_sample_case(problem_url):
-    response = session.get(problem_url)
+def get_sample_case(contest, problem):
+    url = f"https://atcoder.jp/contests/{contest}/tasks/{contest}_{problem}"
+    response = session.get(url)
     if response.status_code == 404:
         print("無効な URL です")
         sys.exit(1)
