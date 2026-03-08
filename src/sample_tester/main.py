@@ -107,7 +107,7 @@ def main():
 def check_config_file():
     path = Path("st.conf")
     if not path.exists():
-        path.touch
+        path.touch()
     with open("st.conf", "r", encoding="utf-8") as f:
         content = f.read()
         if content.split() == "":
