@@ -14,12 +14,7 @@ init(autoreset=True)
 
 dotenv_path = Path.home() / ".config" / "st"
 if not dotenv_path.exists():
-    cmd = ["mkdir", "-p", f"{dotenv_path}"]
-    result = subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-    )
+    dotenv_path.mkdir()
 load_dotenv(dotenv_path=f"{dotenv_path}/.env", verbose=True)
 revel_session = os.getenv("REVEL_SESSION")
 if revel_session is None:
@@ -51,15 +46,7 @@ def main():
 
     path = Path.home() / ".cache" / "st"
     if not path.exists():
-        cmd = ["mkdir", "-p", f"{path}"]
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            print("ディレクトリ作成時にエラーが発生しました")
-            sys.exit(1)
+        path.mkdir()
 
     index = 0
     for i in range(len(url_list)):
