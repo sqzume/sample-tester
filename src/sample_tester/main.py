@@ -30,11 +30,23 @@ session.cookies.set("REVEL_SESSION", revel_session, domain="atcoder.jp")
 
 
 def main():
-    if len(sys.argv) != 3:
-        print("引数を指定してください")
+    if len(sys.argv) == 1 or 3 < len(sys.argv):
+        print("無効な引数です")
         sys.exit(1)
 
-    url = f"https://atcoder.jp/contests/{sys.argv[1]}/tasks"
+    contest = ""
+    problem = ""
+    source_file = ""
+    if len(sys.argv) == 2:
+        contest = check_config_file()
+        problem = sys.argv[1]
+        source_file = sys.argv[1]
+    if len(sys.argv) == 3:
+        contest = sys.argv[1]
+        problem = sys.argv[2]
+        source_file = "a"
+
+    url = f"https://atcoder.jp/contests/{contest}/tasks"
     url_list = get_problems_url(url)
 
     path = Path.home() / ".cache" / "st"
@@ -51,18 +63,18 @@ def main():
 
     index = 0
     for i in range(len(url_list)):
-        if url_list[i].split("_")[-1] == sys.argv[2]:
+        if url_list[i].split("_")[-1] == problem:
             index = i
             break
     cases_in, cases_out = get_sample_case(url_list[index])
 
     # コンパイル
-    path = Path(f"src/{sys.argv[2]}.cpp")
+    path = Path(f"src/{source_file}.cpp")
     if not path.exists():
         print("ソースファイルが存在しません")
         sys.exit(1)
     print("コンパイルしています")
-    compile(sys.argv[2])
+    compile(source_file)
     print("コンパイルが終わりました")
 
     # a.out が存在するかの確認
@@ -90,6 +102,18 @@ def main():
             print(Fore.GREEN + "AC")
         else:
             print(Fore.RED + "WA")
+
+
+def check_config_file():
+    path = Path("st.conf")
+    if not path.exists():
+        path.touch
+    with open("st.conf", "r", encoding="utf-8") as f:
+        content = f.read()
+        if content.split() == "":
+            print("コンテスト名を指定してください")
+            sys.exit(1)
+        return content.strip()
 
 
 def compile(file_name):
